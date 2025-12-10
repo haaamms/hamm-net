@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>David Hammitt, MBA</title>
+    <link rel="stylesheet" href="https://unpkg.com/xp.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('xp.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: "Tahoma", sans-serif;
+            overflow: hidden;
+            cursor: url('dscim.png'), auto;
+        }
+        
+        .desktop {
+            height: calc(100vh - 30px);
+            position: relative;
+            padding: 20px;
+            cursor: url('dscim.png'), auto;
+        }
+        
+        /* Small windows on the left */
+        .left-windows {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .small-window {
+            width: 400px;
+        }
+        
+        /* Main centered window */
+        .center-window {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            transform: translateX(-50%);
+            width: 800px;
+            max-width: calc(100vw - 480px);
+            height: calc(100vh - 70px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Make the window element inside also flex */
+        .center-window .window {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .center-window .window-body {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .center-window .tabs {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .center-window article[role="tabpanel"] {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        
+        .window {
+            cursor: url('dscim.png'), auto;
+        }
+        
+        /* Custom XP Taskbar Styles */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(to bottom, #245edb 0%, #3f8cf3 9%, #245edb 18%, #245edb 92%, #1941a5 100%);
+            border-top: 1px solid #0831d9;
+            display: flex;
+            align-items: center;
+            padding: 0;
+            cursor: url('dscim.png'), auto;
+            z-index: 1000;
+        }
+        
+        .start-button {
+            height: 30px;
+            background: linear-gradient(to bottom, #5ecd5e 0%, #4cc14c 8%, #4cc14c 50%, #34a734 92%, #2d992d 100%);
+            border: 1px solid #188518;
+            border-radius: 0 8px 8px 0;
+            border-left: none;
+            padding: 0 20px 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: url('dscim.png'), auto;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+            font-size: 11px;
+            font-style: italic;
+            margin-right: 10px;
+        }
+        
+        .start-button:hover {
+            background: linear-gradient(to bottom, #6ee76e 0%, #5cd15c 8%, #5cd15c 50%, #44b744 92%, #3da73d 100%);
+        }
+        
+        .start-button:active {
+            background: linear-gradient(to bottom, #2d992d 0%, #34a734 50%, #4cc14c 92%, #5ecd5e 100%);
+        }
+        
+        .start-logo {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .task-buttons {
+            flex: 1;
+            display: flex;
+            gap: 4px;
+            padding: 0 5px;
+        }
+        
+        .task-button {
+            background: linear-gradient(to bottom, #3f8cf3 0%, #2573f0 50%, #1960e8 100%);
+            border: 1px solid #0831d9;
+            padding: 2px 8px;
+            color: white;
+            font-size: 11px;
+            cursor: url('dscim.png'), auto;
+            min-width: 120px;
+            max-width: 160px;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        
+        .task-button:hover {
+            background: linear-gradient(to bottom, #5ea2ff 0%, #3c8cff 50%, #2178ff 100%);
+            cursor: url('dscim.png'), auto;
+        }
+        
+        .task-button.active {
+            background: linear-gradient(to bottom, #1854cc 0%, #1854cc 50%, #1854cc 100%);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+            cursor: url('dscim.png'), auto;
+        }
+        
+        .system-tray {
+            background: linear-gradient(to bottom, #0ea5ea 0%, #0ea5ea 4%, #1caae5 8%, #1caae5 50%, #1890cf 92%, #1890cf 96%, #127dc1 100%);
+            border-left: 2px solid #0d6cb4;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 8px;
+        }
+        
+        .tray-icon {
+            width: 16px;
+            height: 16px;
+            cursor: url('dscim.png'), auto;
+        }
+        
+        .clock {
+            color: white;
+            font-size: 11px;
+            padding: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop">
+        <!-- Small windows on the left -->
+        <div class="left-windows">
+            <!-- Quick Actions Window -->
+            <div class="window small-window">
+                <div class="title-bar">
+                    <div class="title-bar-text">Quick Actions</div>
+                    <div class="title-bar-controls">
+                        <button aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="window-body">
+                    <p>Click a button to perform an action:</p>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button onclick="window.open('https://fantasyinitiative.com/', '_blank')">cool shit</button>
+                        <button>This also does nothing</button>
+                        <button>This does nothing</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Get Me Out Window -->
+            <div class="window small-window">
+                <div class="title-bar">
+                    <div class="title-bar-text">For my info on my projects</div>
+                    <div class="title-bar-controls">
+                        <button aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="window-body">
+                    <p>My Github</p>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button onclick="window.open('https://github.com/haaamms', '_blank')">@haaamms</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main centered window -->
+        <div class="window center-window">
+            <div class="title-bar">
+                <div class="title-bar-text">professional documents</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize"></button>
+                    <button aria-label="Maximize"></button>
+                    <button aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="window-body">
+                <p>Here is a look into some of my technical leanings and projects</p>
+                
+                <!-- Tabs -->
+                <section class="tabs">
+                    <menu role="tablist">
+                        <button role="tab" aria-selected="true" aria-controls="tab-general">Brief Overview</button>
+                        <button role="tab" aria-controls="tab-settings">Professional Experience</button>
+                        <button role="tab" aria-controls="tab-about">ijkl</button>
+                    </menu>
+                    
+                    <article role="tabpanel" id="tab-general">
+                        
+                        
+                        <fieldset>
+    <legend>Technical Skills</legend>
+
+        <div class="field-row">
+            <input checked type="checkbox" id="sql1">
+            <label for="sql1">SQL (BigQuery, MS SQL Server, PostgreSQL)</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="sql2">
+            <label for="sql2">Data Modeling (facts, dimensions, SCDs, semantic layers)</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="etl1">
+            <label for="etl1">ETL/ELT Pipeline Design & Automation</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="etl2">
+            <label for="etl2">SAP, SFTP, API, and Vendor Data Ingestion</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="etl3">
+            <label for="etl3">Delta Loads, Idempotency, and Deduplication</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="python1">
+            <label for="python1">Python for Data Engineering (pandas, paramiko, pysftp)</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="bash1">
+            <label for="bash1">Bash, Shell Scripting, and GCP CLI</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="gcp1">
+            <label for="gcp1">Google Cloud Platform (Cloud Run, Functions, Storage, IAM)</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="gcp2">
+            <label for="gcp2">Containerized Deployments (Docker)</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="api1">
+            <label for="api1">REST APIs, Webhooks, and Authentication Flows</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="deqa1">
+            <label for="deqa1">Data Quality Frameworks & Validation</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="monitor1">
+            <label for="monitor1">Logging, Monitoring, & Error Handling</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="sys1">
+            <label for="sys1">Systems Administration</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="linux1">
+            <label for="linux1">Linux/Server Administration</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="devops1">
+            <label for="devops1">DevOps & Environment Management</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="ci1">
+            <label for="ci1">CI/CD Pipelines</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="func1">
+            <label for="func1">Cloud Function Development & Deployment</label>
+        </div>
+        <div class="field-row">
+            <input checked type="checkbox" id="bi1">
+            <label for="bi1">Power BI Modeling, DAX, and Semantic Layer Design</label>
+        </div>
+    </fieldset>
+                        
+        <div class="field-row" style="margin-top: 15px;">
+            <label for="text-input">Text Input:</label>
+                <input id="text-input" type="text" placeholder="Enter text here" />
+        </div>
+                        
+        <div class="field-row" style="margin-top: 10px;">
+            <label for="select-input">Choose option:</label>
+                <select id="select-input">
+                    <option>Inventive</option>
+                    <option>Dependable</option>
+                    <option>Resourceful</option>
+                    <option>Inquisitive</option>
+                </select>
+                <p>This is a test I don't know why I have this thing here</p>
+        </div>
+            </article>
+                    
+<article role="tabpanel" hidden id="tab-settings">
+    <h3>Professional Work</h3>
+    <fieldset>
+        <legend>Job Experience</legend>
+
+        <div class="field-row">
+            <input id="job1" type="radio" name="job" checked>
+            <label for="job1">ElectrolitUSA - Business Intelligence Leader</label>
+        </div>
+        <div class="field-row">
+            <input id="job2" type="radio" name="job">
+            <label for="job2">DHL Supply Chain - Senior Business Intelligence Analyst</label>
+        </div>
+        <div class="field-row">
+            <input id="job3" type="radio" name="job">
+            <label for="job3">Michigan State University Athletics - Ticket Operations Intern</label>
+        </div>
+    </fieldset>
+
+    <!-- Job Details Sections -->
+    <div class="job-content">
+        <div id="content-job1" class="job-panel">
+            <ul>
+                <li>Designed and automated SAP ingestion pipelines into BigQuery</li>
+                <li>Built Power BI semantic models and enterprise dashboards</li>
+                <li>Created Cloud Run and Cloud Function ETL microservices</li>
+            </ul>
+        </div>
+
+        <div id="content-job2" class="job-panel">
+            <ul>
+                <li>Owned end to end ingestion pipelines using Python and Airflow</li>
+                <li>Developed a scalable REST API ingestion framework</li>
+            </ul>
+        </div>
+
+        <div id="content-job3" class="job-panel">
+            <ul>
+                <li>Created dashboards and SQL models for sales analytics</li>
+            </ul>
+        </div>
+    </div>
+
+    <style>
+        .job-panel {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        .job-panel.active {
+            display: block;
+        }
+    </style>
+
+    <script>
+        // Function to show the selected job content
+        function showJobContent() {
+            // Hide all job panels
+            document.querySelectorAll('.job-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            // Get the checked radio button
+            const checkedRadio = document.querySelector('input[name="job"]:checked');
+            if (checkedRadio) {
+                // Show the corresponding content
+                const contentId = 'content-' + checkedRadio.id;
+                const contentPanel = document.getElementById(contentId);
+                if (contentPanel) {
+                    contentPanel.classList.add('active');
+                }
+            }
+        }
+
+        // Add event listeners to all job radio buttons
+        document.querySelectorAll('input[name="job"]').forEach(radio => {
+            radio.addEventListener('change', showJobContent);
+        });
+
+        // Show the initially checked job content
+        showJobContent();
+    </script>
+    
+    <h4 style="margin-top: 15px;"></h4>
+        <div style="margin-top: 15px; text-align: center;">
+            <p>My resume</p>
+                <button onclick="window.open('David Hammitt -- Resume.pdf', '_blank')">
+                    Download Resume (.pdf)
+                </button>
+        </div>
+    <p style="margin-top: 10px;">Progress:</p>
+    <progress max="100" value="65"></progress>
+</article>
+                    
+                    <article role="tabpanel" hidden id="tab-about">
+                        <h3>there is no escape</h3>
+                        <p>i have no mouth and i must scream</p>
+                        
+                        <ul class="tree-view">
+                            <li>teh pwnage</li>
+                            <li>
+                                <details>
+                                    <summary>links from me to you</summary>
+                                    <ul>
+                                        <li onclick="window.open('https://botoxparty.github.io/XP.css/', '_blank')">web styles here</li>
+                                        <li onclick="window.open('https://github.com/haaamms', '_blank')">my github</li>
+                                        <li onclick="window.open('https://www.discogs.com/user/dhammi1/collection', '_blank')">my discogs</li>
+                                    </ul>
+                                </details>
+                            </li>
+                            <li>Version 1.0</li>
+                        </ul>
+                    </article>
+                </section>
+                
+                <section class="field-row" style="justify-content: flex-end; margin-top: 15px;">
+                    <button>OK</button>
+                    <button>Cancel</button>
+                    <button>Apply</button>
+                </section>
+            </div>
+            
+            <div class="status-bar">
+                <p class="status-bar-field">Ready</p>
+                <p class="status-bar-field">Status: Active</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Windows XP Style Taskbar -->
+    <div class="taskbar">
+        <a href="index.html" style="text-decoration: none; color: inherit;">
+            <div class="start-button">
+                <svg class="start-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 3h8v8H3V3z" fill="#F35325"/>
+                <path d="M13 3h8v8h-8V3z" fill="#81BC06"/>
+                <path d="M3 13h8v8H3v-8z" fill="#05A6F0"/>
+                <path d="M13 13h8v8h-8v-8z" fill="#FFBA08"/>
+            </svg>
+            <span>Start</span>
+        </div>
+        </a>
+        
+        <div class="task-buttons">
+            <button class="task-button active">My Application</button>
+            <button class="task-button">Quick Actions</button>
+        </div>
+        
+        <div class="system-tray">
+            <svg class="tray-icon" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <svg class="tray-icon" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <div class="clock" id="clock">12:00 PM</div>
+        </div>
+    </div>
+
+    <script>
+    // Tab switching functionality
+    document.querySelectorAll('[role="tab"]').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const target = tab.getAttribute('aria-controls');
+            const tablist = tab.closest('menu');
+            const tabsSection = tab.closest('.tabs');
+            
+            tablist.querySelectorAll('[role="tab"]').forEach(t => {
+                t.setAttribute('aria-selected', 'false');
+            });
+            
+            tabsSection.querySelectorAll('[role="tabpanel"]').forEach(panel => {
+                panel.hidden = true;
+            });
+            
+            tab.setAttribute('aria-selected', 'true');
+            document.getElementById(target).hidden = false;
+        });
+    });
+    
+    // Update clock
+    function updateClock() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        document.getElementById('clock').textContent = `${displayHours}:${minutes} ${ampm}`;
+    }
+    
+    updateClock();
+    setInterval(updateClock, 1000);
+    </script>
+
+<img src="200.gif" 
+     alt="Clippy" 
+     style="position: fixed; bottom: 100px; right: 50px; width: 120px; height: 120px; z-index: 10000;">
+</body>
+</html>

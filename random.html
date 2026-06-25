@@ -188,45 +188,102 @@
         }
     </style>
 </head>
+<script>
+(function () {
+    var loadedAt = Date.now();
+    var btn = document.getElementById('cf-send');
+    var status = document.getElementById('cf-status');
+
+    btn.addEventListener('click', async function () {
+        var honeypot = document.getElementById('cf-website').value;
+        var elapsed = Date.now() - loadedAt;
+
+        // Client-side feedback only — the real checks happen on the Pi.
+        if (honeypot) { status.textContent = 'Thanks!'; return; }
+        if (elapsed < 2500) { status.textContent = 'Please take a moment before sending.'; return; }
+
+        var name = document.getElementById('cf-name').value.trim();
+        var email = document.getElementById('cf-email').value.trim();
+        var message = document.getElementById('cf-message').value.trim();
+        if (!name || !email || !message) { status.textContent = 'Please fill in all fields.'; return; }
+
+        status.textContent = 'Sending…';
+        try {
+            var res = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, email: email, message: message,
+                                       website: honeypot, elapsed_ms: elapsed })
+            });
+            status.textContent = res.ok ? 'Message sent!' : 'Something went wrong.';
+            if (res.ok) { btn.disabled = true; }
+        } catch (e) {
+            status.textContent = 'Network error — try again.';
+        }
+    });
+})();
+</script>
+
 <body>
     <div class="desktop">
-        <!-- Small windows on the left -->
-        <div class="left-windows">
-            <!-- Quick Actions Window -->
-            <div class="window small-window">
-                <div class="title-bar">
-                    <div class="title-bar-text">Quick Actions</div>
-                    <div class="title-bar-controls">
-                        <button aria-label="Close"></button>
-                    </div>
-                </div>
-                <div class="window-body">
-                    <p>Click a button to perform an action:</p>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button onclick="window.open('https://fantasyinitiative.com/', '_blank')">cool shit</button>
-                        <button>This also does nothing</button>
-                        <button>This does nothing</button>
-                    </div>
+    <!-- Small windows on the left -->
+    <div class="left-windows">
+
+        <!-- GitHub / LinkedIn (top) -->
+        <div class="window small-window">
+            <div class="title-bar">
+                <div class="title-bar-text">For my info on my projects</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Close"></button>
                 </div>
             </div>
-            
-            <!-- Get Me Out Window -->
-            <div class="window small-window">
-                <div class="title-bar">
-                    <div class="title-bar-text">For my info on my projects</div>
-                    <div class="title-bar-controls">
-                        <button aria-label="Close"></button>
-                    </div>
-                </div>
-                <div class="window-body">
-                    <p>My Github</p>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button onclick="window.open('https://github.com/haaamms', '_blank')">@haaamms</button>
-                        <button onclick="window.open('https://www.linkedin.com/in/d-hammitt/', '_blank')">LinkedIn</button>
-                    </div>
+            <div class="window-body">
+                <p>My Github</p>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button onclick="window.open('https://github.com/haaamms', '_blank')">@haaamms</button>
+                    <button onclick="window.open('https://www.linkedin.com/in/d-hammitt/', '_blank')">LinkedIn</button>
                 </div>
             </div>
         </div>
+
+        <!-- Contact Me (underneath) -->
+        <div class="window small-window">
+            <div class="title-bar">
+                <div class="title-bar-text">Contact Me</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize"></button>
+                    <button aria-label="Maximize"></button>
+                    <button aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="window-body has-space">
+                <div class="field-row-stacked">
+                    <label for="cf-name">Name</label>
+                    <input id="cf-name" type="text" />
+                </div>
+                <div class="field-row-stacked">
+                    <label for="cf-email">Your email</label>
+                    <input id="cf-email" type="email" />
+                </div>
+                <div class="field-row-stacked">
+                    <label for="cf-message">Message</label>
+                    <textarea id="cf-message" rows="4"></textarea>
+                </div>
+
+                <!-- HONEYPOT: off-screen, humans never see or tab to it -->
+                <div style="position:absolute; left:-9999px;" aria-hidden="true">
+                    <label for="cf-website">Website</label>
+                    <input id="cf-website" type="text" tabindex="-1" autocomplete="off" />
+                </div>
+
+                <div class="field-row" style="justify-content: flex-end; margin-top: 12px;">
+                    <button id="cf-send">Send</button>
+                </div>
+                <p id="cf-status" style="margin: 6px 0 0;"></p>
+            </div>
+        </div>
+
+    </div><!-- /.left-windows -->
         
         <!-- Main centered window -->
         <div class="window center-window">

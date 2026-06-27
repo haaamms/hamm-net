@@ -188,40 +188,44 @@
         }
     </style>
 </head>
-<script>
-(function () {
-    var loadedAt = Date.now();
-    var btn = document.getElementById('cf-send');
-    var status = document.getElementById('cf-status');
+<script> // form for emailing me on the contact me form
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('cf-form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const status = document.getElementById('cf-status');
 
-    btn.addEventListener('click', async function () {
-        var honeypot = document.getElementById('cf-website').value;
-        var elapsed = Date.now() - loadedAt;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-        // Client-side feedback only — the real checks happen on the Pi.
-        if (honeypot) { status.textContent = 'Thanks!'; return; }
-        if (elapsed < 2500) { status.textContent = 'Please take a moment before sending.'; return; }
+        const formData = new FormData(form);
+        formData.append("access_key", "1e28c532-e852-40ae-a7ff-4cbb2cc8130b");
 
-        var name = document.getElementById('cf-name').value.trim();
-        var email = document.getElementById('cf-email').value.trim();
-        var message = document.getElementById('cf-message').value.trim();
-        if (!name || !email || !message) { status.textContent = 'Please fill in all fields.'; return; }
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = "Sending...";
+        submitBtn.disabled = true;
+        status.textContent = "";
 
-        status.textContent = 'Sending…';
         try {
-            var res = await fetch('/api/contact', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: name, email: email, message: message,
-                                       website: honeypot, elapsed_ms: elapsed })
+            const response = await fetch("https://api.web3forms.com/submit", {
+                method: "POST",
+                body: formData
             });
-            status.textContent = res.ok ? 'Message sent!' : 'Something went wrong.';
-            if (res.ok) { btn.disabled = true; }
-        } catch (e) {
-            status.textContent = 'Network error — try again.';
+            const data = await response.json();
+
+            if (response.ok) {
+                status.textContent = "Message sent!";
+                form.reset();
+            } else {
+                status.textContent = "Error: " + data.message;
+            }
+        } catch (error) {
+            status.textContent = "Something went wrong — try again.";
+        } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
         }
     });
-})();
+}); 
 </script>
 
 <body>
@@ -256,39 +260,38 @@
                     <button aria-label="Close"></button>
                 </div>
             </div>
-            <div class="window-body has-space">
+        <div class="window-body has-space">
+            <form id="cf-form">
                 <div class="field-row-stacked">
                     <label for="cf-name">Name</label>
-                    <input id="cf-name" type="text" />
+                    <input id="cf-name" name="name" type="text" />
                 </div>
                 <div class="field-row-stacked">
                     <label for="cf-email">Your email</label>
-                    <input id="cf-email" type="email" />
+                    <input id="cf-email" name="email" type="email" />
                 </div>
                 <div class="field-row-stacked">
                     <label for="cf-message">Message</label>
-                    <textarea id="cf-message" rows="4"></textarea>
+                    <textarea id="cf-message" name="message" rows="4"></textarea>
                 </div>
 
-                <!-- HONEYPOT: off-screen, humans never see or tab to it -->
-                <div style="position:absolute; left:-9999px;" aria-hidden="true">
-                    <label for="cf-website">Website</label>
-                    <input id="cf-website" type="text" tabindex="-1" autocomplete="off" />
-                </div>
+                <!-- Web3Forms' built-in honeypot -->
+                <input type="checkbox" name="botcheck" style="display:none">
 
                 <div class="field-row" style="justify-content: flex-end; margin-top: 12px;">
-                    <button id="cf-send">Send</button>
+                    <button type="submit" id="cf-send">Send</button>
                 </div>
                 <p id="cf-status" style="margin: 6px 0 0;"></p>
-            </div>
+            </form>
         </div>
+    </div>
 
     </div><!-- /.left-windows -->
         
         <!-- Main centered window -->
         <div class="window center-window">
             <div class="title-bar">
-                <div class="title-bar-text">professional documents</div>
+                <div class="title-bar-text">Professional Documents</div>
                 <div class="title-bar-controls">
                     <button aria-label="Minimize"></button>
                     <button aria-label="Maximize"></button>
